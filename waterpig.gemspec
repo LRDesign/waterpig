@@ -22,7 +22,6 @@ Gem::Specification.new do |spec|
 
     lib/waterpig/save-and-open-on-fail.rb
     lib/waterpig/ckeditor-tools.rb
-    lib/waterpig/configure.rb
     lib/waterpig/selenium_chrome.rb
     lib/waterpig/database-cleaner.rb
     lib/waterpig/tinymce-tools.rb
