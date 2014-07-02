@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name		= "waterpig"
-  spec.version		= "0.0.2"
+  spec.version		= "0.0.3"
   author_list = {
     "Judson Lester" => 'nyarly@gmail.com'
   }
@@ -38,6 +38,8 @@ Gem::Specification.new do |spec|
 
   #spec.add_dependency("", "> 0")
   spec.add_dependency("capybara", "~> 2.2.0")
+  spec.add_dependency("database_cleaner", "~> 1.3.0")
+  spec.add_dependency("rspec-steps", "~> 0.4.1")
 
   #spec.post_install_message = "Thanks for installing my gem!"
 end
