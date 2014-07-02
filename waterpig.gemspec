@@ -19,7 +19,19 @@ Gem::Specification.new do |spec|
   # !!find lib bin doc spec spec_help -not -regex '.*\.sw.' -type f 2>/dev/null
   spec.files		= %w[
     lib/waterpig.rb
+
+    lib/waterpig/save-and-open-on-fail.rb
+    lib/waterpig/ckeditor-tools.rb
+    lib/waterpig/configure.rb
+    lib/waterpig/selenium_chrome.rb
+    lib/waterpig/database-cleaner.rb
+    lib/waterpig/tinymce-tools.rb
     lib/waterpig/browser-integration.rb
+    lib/waterpig/poltergeist.rb
+    lib/waterpig/warning-suppressor.rb
+    lib/waterpig/snap-step.rb
+    lib/waterpig/browser-tools.rb
+
     spec/embarrassing.rb
     spec_help/spec_helper.rb
     spec_help/gem_test_suite.rb
