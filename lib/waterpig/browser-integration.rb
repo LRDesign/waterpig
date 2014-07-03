@@ -12,6 +12,8 @@ require 'waterpig/browser-tools'
 require 'waterpig/snap-step'
 
 Capybara.default_driver = (ENV['CAPYBARA_DRIVER'] || :poltergeist_debug).to_sym
+Capybara.javascript_driver = (ENV['CAPYBARA_JS_DRIVER'] || :poltergeist_debug).to_sym
+
 RSpec.configure do |config|
   config.add_setting :waterpig_browser_types, :default => [:feature]
   config.add_setting :waterpig_autosnap, :default => true
