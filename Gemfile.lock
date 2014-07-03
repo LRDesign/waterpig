@@ -69,6 +69,7 @@ GEM
     rspec-steps (0.4.1)
       rspec (>= 2.6, < 2.99)
     sass (3.2.19)
+    sequel (4.12.0)
     simplecov (0.8.2)
       docile (~> 1.1.0)
       multi_json
@@ -88,4 +89,5 @@ DEPENDENCIES
   cadre
   corundum
   rspec (< 3.0)
+  sequel
   waterpig!
