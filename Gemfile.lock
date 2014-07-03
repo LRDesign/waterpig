@@ -87,4 +87,5 @@ PLATFORMS
 DEPENDENCIES
   cadre
   corundum
+  rspec (< 3.0)
   waterpig!
