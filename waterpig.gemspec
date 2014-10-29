@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name		= "waterpig"
-  spec.version		= "0.0.5"
+  spec.version		= "0.0.6"
   author_list = {
     "Judson Lester" => 'nyarly@gmail.com'
   }
@@ -48,7 +48,7 @@ Gem::Specification.new do |spec|
   spec.rdoc_options	+= ["--title", "#{spec.name}-#{spec.version} Documentation"]
 
   #spec.add_dependency("", "> 0")
-  spec.add_dependency("capybara", "~> 2.2.0")
+  spec.add_dependency("capybara", "~> 2.2")
   spec.add_dependency("database_cleaner", "~> 1.3.0")
   spec.add_dependency("rspec-steps", "~> 0.4.1")
 
