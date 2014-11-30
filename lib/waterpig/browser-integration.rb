@@ -11,6 +11,14 @@ require 'waterpig/tinymce-tools'
 require 'waterpig/browser-tools'
 require 'waterpig/snap-step'
 
+def pick_capybara_driver(configured)
+  return configured.to_sym if configured
+  [:poltergeist_debug, :selenium_chrome].each do |candidate|
+    return candidate if Capybara.drivers.has_key? candidate
+  end
+end
+
+
 RSpec.configure do |config|
   config.add_setting :waterpig_browser_types, :default => [:feature]
   config.add_setting :waterpig_autosnap, :default => true
@@ -19,8 +27,8 @@ RSpec.configure do |config|
 
 
   config.before(:suite) do
-    Capybara.default_driver = (config.waterpig_driver || :poltergeist_debug).to_sym
-    Capybara.javascript_driver = (config.waterpig_js_driver || :poltergeist_debug).to_sym
+    Capybara.default_driver = pick_capybara_driver(config.waterpig_driver)
+    Capybara.javascript_driver = pick_capybara_driver(config.waterpig_js_driver)
   end
 
   if defined?(Timecop)
