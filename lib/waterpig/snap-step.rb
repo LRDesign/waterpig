@@ -9,7 +9,8 @@ module Waterpig
 
   module AutoSnap
     def self.included(group)
-      group.metadata[:snapshots_into] = group.metadata[:example_group][:description_args].first.downcase.gsub(/\W+/, "_").sub(/^_*/,'').sub(/_*$/,'')
+      description_args = group.metadata[:description_args] || group[:example_group][:description_args]
+      group.metadata[:snapshots_into] = description_args.first.downcase.gsub(/\W+/, "_").sub(/^_*/,'').sub(/_*$/,'')
     end
   end
 end
