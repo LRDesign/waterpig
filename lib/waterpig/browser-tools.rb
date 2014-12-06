@@ -59,11 +59,15 @@ module Waterpig
       dir = "tmp/#{dir}"
 
       path = "#{dir}/#{"%03i" % frame_index(dir)}-#{name}.png"
-      page.driver.save_screenshot(path, :full => true)
+      begin
+        page.driver.save_screenshot(path, :full => true)
+      rescue Capybara::NotSupportedByDriverError => nsbde
+        BrowserTools.warn("Can't use snapshot", nsbde.inspect)
+      rescue Object => ex
+        BrowserTools.warn("Error attempted snapshot", ex.inspect)
+      end
 
       yield path if block_given?
-    rescue Capybara::NotSupportedByDriverError => nsbde
-      BrowserTools.warn("Can't use snapshot", nsbde.inspect)
     end
 
     def snapshot(dir)

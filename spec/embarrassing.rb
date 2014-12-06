@@ -1,3 +1,6 @@
+require 'sequel'
+Sequel.sqlite
+
 require 'waterpig'
 
 describe "Nothing" do
