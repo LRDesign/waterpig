@@ -22,7 +22,7 @@ end
 
 RSpec.configure do |config|
   config.add_setting :waterpig_browser_types, :default => [:feature]
-  config.add_setting :waterpig_autosnap, :default => true
+  config.add_setting :waterpig_autosnap, :default => ENV['WATERPIG_AUTOSNAP']
   config.add_setting :waterpig_driver, :default => ENV['CAPYBARA_DRIVER']
   config.add_setting :waterpig_js_driver, :default => ENV['CAPYBARA_JS_DRIVER']
 
