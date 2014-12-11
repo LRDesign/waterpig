@@ -9,6 +9,7 @@ require 'waterpig/save-and-open-on-fail'
 require 'waterpig/ckeditor-tools'
 require 'waterpig/tinymce-tools'
 require 'waterpig/browser-tools'
+require 'waterpig/browser-size'
 require 'waterpig/snap-step'
 
 module Waterpig
@@ -22,9 +23,18 @@ end
 
 RSpec.configure do |config|
   config.add_setting :waterpig_browser_types, :default => [:feature]
+  config.add_setting :waterpig_browser_size_types, :default => [:feature]
+
   config.add_setting :waterpig_autosnap, :default => ENV['WATERPIG_AUTOSNAP']
   config.add_setting :waterpig_driver, :default => ENV['CAPYBARA_DRIVER']
   config.add_setting :waterpig_js_driver, :default => ENV['CAPYBARA_JS_DRIVER']
+
+  config.add_setting :waterpig_browser_sizes, :default => {
+    :mobile  => { :width => 320, :height => 480 },
+    :small   => { :width => 550, :height => 700 },
+    :medium  => { :width => 800, :height => 900 },
+    :desktop => { :width => 1024, :height => 1024 }
+  }
 
 
   config.before(:suite) do
@@ -45,4 +55,8 @@ RSpec.configure do |config|
     config.waterpig_autosnap? && config.waterpig_browser_types.include?(value)
   }
   config.include Waterpig::SnapStep, :snapshots_into => proc{|v| v.is_a? String}
+
+  config.include Waterpig::BrowserSize, :type => proc{|value|
+    config.waterpig_browser_size_types && config.waterpig_browser_size_types.include?(value)
+  }
 end
