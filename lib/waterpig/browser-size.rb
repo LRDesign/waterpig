@@ -12,9 +12,7 @@ module Waterpig
     end
 
     def self.current_size(example)
-      p example.methods.sort
       (example.metadata[:size] || ENV['BROWSER_SIZE'] || :desktop).to_sym
     end
-
   end
 end
