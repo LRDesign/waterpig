@@ -2,6 +2,7 @@ require 'sequel'
 Sequel.sqlite
 
 require 'waterpig'
+require 'waterpig/deadbeat-connections'
 
 describe "Nothing" do
   it "should do more" do

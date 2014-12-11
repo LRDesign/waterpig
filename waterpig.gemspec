@@ -24,12 +24,14 @@ Gem::Specification.new do |spec|
     lib/waterpig/ckeditor-tools.rb
     lib/waterpig/selenium_chrome.rb
     lib/waterpig/database-cleaner.rb
+    lib/waterpig/deadbeat-connections.rb
     lib/waterpig/tinymce-tools.rb
     lib/waterpig/browser-integration.rb
     lib/waterpig/poltergeist.rb
     lib/waterpig/warning-suppressor.rb
     lib/waterpig/snap-step.rb
     lib/waterpig/browser-tools.rb
+    lib/waterpig/browser-size.rb
 
     spec/embarrassing.rb
     spec_help/spec_helper.rb
