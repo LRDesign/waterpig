@@ -19,6 +19,34 @@ module Waterpig
       return candidate if Capybara.drivers.has_key? candidate
     end
   end
+
+  module ExampleLogger
+    def self.included(group)
+      group.before :each do |example|
+        Rails.logger.fatal do
+          "Beginning #{example.full_description} (at #{example.location})"
+        end
+      end
+
+      group.after :each do |example|
+        Rails.logger.fatal do
+          "Finished #{example.full_description} (at #{example.location})"
+        end
+      end
+
+      group.before :step do |example|
+        Rails.logger.fatal do
+          "Beginning step #{example.full_description} (at #{example.location})"
+        end
+      end
+
+      group.after :step do |example|
+        Rails.logger.fatal do
+          "Finished step #{example.full_description} (at #{example.location})"
+        end
+      end
+    end
+  end
 end
 
 RSpec.configure do |config|
@@ -58,5 +86,13 @@ RSpec.configure do |config|
 
   config.include Waterpig::BrowserSize, :type => proc{|value|
     config.waterpig_browser_size_types && config.waterpig_browser_size_types.include?(value)
+  }
+end
+
+RSpec.configure do |config|
+  config.add_setting :waterpig_log_types, :default => [:feature]
+
+  config.include Waterpig::ExampleLogger, :type => proc{|value|
+    config.waterpig_log_types && config.waterpig_log_types.include?(value)
   }
 end
