@@ -20,6 +20,23 @@ module Waterpig
       end
     end
 
+    # tables are expected to be hash of hashes, used as follows:
+    #  * The keys of the top-level hashes will be the leftmost column, "index".
+    #  * The merged keys of the inner hashes will be the column headers
+    #  * The values of the inner hashes will fill the table cells.
+    #
+    #  So for example:
+    #    { foo: { a: 1, b: 2 },
+    #      bar: { a: 5, c: 3 }
+    #
+    #  Will render as:
+    #  +-------+---+---+---+
+    #  | index | a | b | c |
+    #  +-------+---+---+---+
+    #  |  foo  | 1 | 2 |   |
+    #  +-------+---+---+---+
+    #  |  bar  | 5 |   | 3 |
+    #  +-------+---+---+---+
     def emit_table(hash)
       table      = Text::Table.new
       keys = hash.reduce([]){ |memo, arr| memo + arr[1].keys }.uniq
