@@ -53,6 +53,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency("capybara", "~> 2.2")
   spec.add_dependency("database_cleaner", "~> 1.3.0")
   spec.add_dependency("rspec-steps", "> 0")
+  spec.add_dependency("text-table", "~> 1.2.3")
 
   #spec.post_install_message = "Thanks for installing my gem!"
 end

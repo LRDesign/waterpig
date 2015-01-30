@@ -47,6 +47,38 @@ module Waterpig
       end
     end
   end
+
+  class BrowserConsoleLogger < Logger
+    def initialize(path = nil)
+      path ||= Rails.root.join("log/#{Rails.env}_console.log")
+      super(path)
+    end
+
+    def emit_header(string)
+      self.<<("\e[1m#{string}\e[0m\n")
+    end
+
+    def emit_log(entry)
+      self.<<( entry['time'] + "\n")
+      if entry['type'] == 'table'
+        emit_table(entry['value'])
+      else
+        self.<<(entry['value'].to_s + "\n\n")
+      end
+    end
+
+    def emit_table(hash)
+      require 'text-table'
+      table      = Text::Table.new
+      keys = hash.reduce([]){ |memo, arr| memo + arr[1].keys }.uniq
+      table.head = [ "index" ] + keys
+      hash.each do |name, row|
+        table.rows << [ name ] + keys.map{ |key| row.fetch(key, nil)}
+      end
+      self.<<(table.to_s + "\n\n")
+    end
+  end
+
 end
 
 RSpec.configure do |config|
@@ -64,10 +96,19 @@ RSpec.configure do |config|
     :desktop => { :width => 1024, :height => 1024 }
   }
 
+  config.after :each do |example|
+    config.waterpig_console_logger.emit_header "Browser console for #{example.full_description}"
+    console_entries = page.evaluate_script("console.history");
+    #byebug
+    console_entries.each do |entry|
+      config.waterpig_console_logger.emit_log(entry)
+    end
+  end
 
   config.before(:suite) do
     Capybara.default_driver = Waterpig.pick_capybara_driver(config.waterpig_driver)
     Capybara.javascript_driver = Waterpig.pick_capybara_driver(config.waterpig_js_driver)
+    config.add_setting :waterpig_console_logger, :default => Waterpig::BrowserConsoleLogger.new
   end
 
   if defined?(Timecop)
