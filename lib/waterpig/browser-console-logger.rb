@@ -27,7 +27,7 @@ module Waterpig
     #
     #  So for example:
     #    { foo: { a: 1, b: 2 },
-    #      bar: { a: 5, c: 3 }
+    #      bar: { a: 5, c: 3 }}
     #
     #  Will render as:
     #  +-------+---+---+---+
