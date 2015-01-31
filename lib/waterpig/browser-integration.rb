@@ -48,8 +48,6 @@ module Waterpig
       end
     end
   end
-
-
 end
 
 RSpec.configure do |config|

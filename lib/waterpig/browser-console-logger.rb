@@ -58,7 +58,9 @@ module Waterpig
           config.waterpig_clearable_logs << 'test_console'
         end
 
-        config.after :each do |example|
+        config.after(:each,:type => proc{|value|
+          config.waterpig_log_types && config.waterpig_log_types.include?(value)
+        }) do |example|
           config.waterpig_console_logger.emit_header "Browser console for #{example.full_description}"
           console_entries = page.evaluate_script("console.history");
           console_entries.each do |entry|
