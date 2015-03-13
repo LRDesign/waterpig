@@ -14,18 +14,24 @@ module Waterpig
     def emit_log(entry)
       self.<<( entry['time'] + "\n")
       if entry['type'] == 'table'
-        #self.<<("table JSON:")
-        #self.<<("\n-------------------------\n")
-        #self.<<(entry['value'])
-        #self.<<("\n-------------------------\n")
         emit_table(entry['value'])
       else
         self.<<(entry['value'].to_s + "\n\n")
       end
     end
 
-    # tables are either a simple hash, or a hash of hashes.
-    #
+    # Tables are either a simple hash, or a hash of hashes.  See documentation
+    # on emit_simple_table and emit_complex_table.
+    def emit_table(hash)
+      table      = Text::Table.new
+      if hash.values.any?{ |val| val.is_a?(Hash) }
+        emit_complex_table(hash, table)
+      else
+        emit_simple_table(hash, table)
+      end
+      self.<<(table.to_s + "\n\n")
+    end
+
     # Simple hashes emit as a two-column table, with keys making up the index
     # column:
     #   { a: 1, b: 4, c: 'foo'}
@@ -41,8 +47,13 @@ module Waterpig
     #  +-------+--------+
     #  |   c   | 'foo'  |
     #  +-------+--------+
-    #
-    #
+    def emit_simple_table(hash, table)
+      table.head = [ "index", "values" ]
+      hash.each do | key, val |
+        table.rows << [ key, val ]
+      end
+    end
+
     # When they are a hash of hashes, used as follows:
     #  * The keys of the top-level hashes will be the leftmost column, "index".
     #  * The merged keys of the inner hashes will be the column headers
@@ -60,31 +71,12 @@ module Waterpig
     #  +-------+---+---+---+
     #  |  bar  | 5 |   | 3 |
     #  +-------+---+---+---+
-    def emit_table(hash)
-      if hash.values.any?{ |val| val.is_a?(Hash) }
-        emit_complex_table(hash)
-      else
-        emit_simple_table(hash)
-      end
-    end
-
-    def emit_simple_table(hash)
-      table      = Text::Table.new
-      table.head = [ "index", "values" ]
-      hash.each do | key, val |
-        table.rows << [ key, val ]
-      end
-      self.<<(table.to_s + "\n\n")
-    end
-
-    def emit_complex_table(hash)
-      table      = Text::Table.new
+    def emit_complex_table(hash, table)
       keys = hash.reduce([]){ |memo, arr| memo + arr[1].keys }.uniq
       table.head = [ "index" ] + keys
       hash.each do |name, row|
         table.rows << [ name ] + keys.map{ |key| row.fetch(key, nil)}
       end
-      self.<<(table.to_s + "\n\n")
     end
 
     def bold(string)
