@@ -1,22 +1,31 @@
 module Waterpig
-  class BrowserConsoleLogger < Logger
-    require 'text-table'
+  class BrowserConsoleLogger
+    require 'singleton'
+    include Singleton
 
-    def initialize(path = nil)
-      path ||= Rails.root.join("log/#{Rails.env}_console.log")
-      super(path)
+    require 'text-table'
+    attr_writer :file
+
+    def file
+      @file ||= File.new(path, "w")
+    end
+    def path
+      @path
+    end
+    def path=(arg)
+      @path = arg
     end
 
     def emit_header(string)
-      self.<<("#{bold(string)}\n")
+      file.write("#{bold(string)}\n")
     end
 
     def emit_log(entry)
-      self.<<( entry['time'] + "\n")
+      file.write( entry['time'] + "\n")
       if entry['type'] == 'table'
         emit_table(entry['value'])
       else
-        self.<<(entry['value'].to_s + "\n\n")
+        file.write(entry['value'].to_s + "\n\n")
       end
     end
 
@@ -29,7 +38,7 @@ module Waterpig
       else
         emit_simple_table(hash, table)
       end
-      self.<<(table.to_s + "\n\n")
+      @file.write(table.to_s + "\n\n")
     end
 
     # Simple hashes emit as a two-column table, with keys making up the index
@@ -85,18 +94,27 @@ module Waterpig
 
     class << self
       def configure(config)
-        config.before :suite do
-          config.add_setting :waterpig_console_logger, :default => Waterpig::BrowserConsoleLogger.new
-          config.waterpig_clearable_logs << 'test_console'
+        config.add_setting :waterpig_browser_console_log_path, :default => nil
+        config.add_setting :waterpig_log_browser_console, :default => ENV['LOG_BROWSER_CONSOLE']
+
+        config.before(:suite) do
+          if config.waterpig_log_browser_console
+            config.waterpig_browser_console_log_path ||=  Rails.root.join("log/#{Rails.env}_browser_console.log")
+            config.waterpig_clearable_logs << 'test_browser_console'
+          end
         end
 
         config.after(:each,:type => proc{|value|
           config.waterpig_log_types && config.waterpig_log_types.include?(value)
         }) do |example|
-          config.waterpig_console_logger.emit_header "Browser console for #{example.full_description}"
-          console_entries = page.evaluate_script("console.history");
-          console_entries.each do |entry|
-            config.waterpig_console_logger.emit_log(entry)
+          if config.waterpig_log_browser_console
+            logger = Waterpig::BrowserConsoleLogger.instance
+            logger.path = config.waterpig_browser_console_log_path
+            logger.emit_header "Browser console for #{example.full_description}"
+            console_entries = page.evaluate_script("console.history");
+            console_entries.each do |entry|
+              logger.emit_log(entry)
+            end
           end
         end
       end

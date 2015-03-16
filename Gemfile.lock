@@ -5,6 +5,7 @@ PATH
       capybara (~> 2.2)
       database_cleaner (~> 1.3.0)
       rspec-steps (> 0)
+      text-table (~> 1.2.3)
 
 GEM
   remote: https://rubygems.org/

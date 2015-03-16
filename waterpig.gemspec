@@ -2,7 +2,8 @@ Gem::Specification.new do |spec|
   spec.name		= "waterpig"
   spec.version		= "0.5.0"
   author_list = {
-    "Judson Lester" => 'nyarly@gmail.com'
+    "Judson Lester" => 'nyarly@gmail.com',
+    "Evan Dorn"     => 'evan@lrdesign.com'
   }
   spec.authors		= author_list.keys
   spec.email		= spec.authors.map {|name| author_list[name]}

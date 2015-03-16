@@ -66,13 +66,18 @@ RSpec.configure do |config|
     :desktop => { :width => 1024, :height => 1024 }
   }
 
-  if ENV['LOG_BROWSER_CONSOLE']
-    Waterpig::BrowserConsoleLogger.configure(config)
-  end
+  Waterpig::BrowserConsoleLogger.configure(config)
 
   config.before(:suite) do
     Capybara.default_driver = Waterpig.pick_capybara_driver(config.waterpig_driver)
     Capybara.javascript_driver = Waterpig.pick_capybara_driver(config.waterpig_js_driver)
+    config.waterpig_clearable_logs.each do |logfile|
+      if File.directory?('log')
+        File::open("log/#{logfile}.log", "w") do |log|
+          log.write ""
+        end
+      end
+    end
   end
 
   if defined?(Timecop)
@@ -92,6 +97,7 @@ RSpec.configure do |config|
   config.include Waterpig::BrowserSize, :type => proc{|value|
     config.waterpig_browser_size_types && config.waterpig_browser_size_types.include?(value)
   }
+
 end
 
 RSpec.configure do |config|
