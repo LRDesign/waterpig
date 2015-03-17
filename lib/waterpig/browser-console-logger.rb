@@ -83,6 +83,17 @@ module Waterpig
       end
     end
 
+    def handle_example(page, example)
+      emit_header "Browser console for #{example.full_description}"
+      console_entries = page.evaluate_script("console.history");
+
+      if console_entries
+        console_entries.each do |entry|
+          logger.emit_log(entry)
+        end
+      end
+    end
+
     def bold(string)
       "\e[1m#{string}\e[0m"
     end
@@ -102,19 +113,11 @@ module Waterpig
         config.after(:each,:type => proc{|value|
           config.waterpig_log_types && config.waterpig_log_types.include?(value)
         }) do |example|
-          if config.waterpig_log_browser_console
-            logger = Waterpig::BrowserConsoleLogger.instance
-            logger.path = config.waterpig_browser_console_log_path
-            logger.emit_header "Browser console for #{example.full_description}"
-            console_entries = page.evaluate_script("console.history");
-            console_entries.each do |entry|
-              logger.emit_log(entry)
-            end
-          end
+          logger = Waterpig::BrowserConsoleLogger.instance
+          logger.path = config.waterpig_browser_console_log_path
+          logger.handle_example(page, example) if config.waterpig_log_browser_console
         end
       end
     end
   end
-
-
 end
