@@ -5,15 +5,10 @@ module Waterpig
 
     require 'text-table'
     attr_writer :file
+    attr_accessor :path
 
     def file
       @file ||= File.new(path, "w")
-    end
-    def path
-      @path
-    end
-    def path=(arg)
-      @path = arg
     end
 
     def emit_header(string)
