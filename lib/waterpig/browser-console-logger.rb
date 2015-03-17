@@ -1,6 +1,6 @@
+require 'singleton'
 module Waterpig
   class BrowserConsoleLogger
-    require 'singleton'
     include Singleton
 
     require 'text-table'
