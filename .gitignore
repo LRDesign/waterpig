@@ -7,3 +7,4 @@ loop/
 log/
 corundum/
 pkg/
+.ruby-gemset

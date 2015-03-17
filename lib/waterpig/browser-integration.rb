@@ -10,6 +10,7 @@ require 'waterpig/ckeditor-tools'
 require 'waterpig/tinymce-tools'
 require 'waterpig/browser-tools'
 require 'waterpig/browser-size'
+require 'waterpig/browser-console-logger'
 require 'waterpig/snap-step'
 
 module Waterpig
@@ -56,6 +57,7 @@ RSpec.configure do |config|
   config.add_setting :waterpig_autosnap, :default => ENV['WATERPIG_AUTOSNAP']
   config.add_setting :waterpig_driver, :default => ENV['CAPYBARA_DRIVER']
   config.add_setting :waterpig_js_driver, :default => ENV['CAPYBARA_JS_DRIVER']
+  config.add_setting :waterpig_clearable_logs, :default => [ 'test' ]
 
   config.add_setting :waterpig_browser_sizes, :default => {
     :mobile  => { :width => 320, :height => 480 },
@@ -64,10 +66,18 @@ RSpec.configure do |config|
     :desktop => { :width => 1024, :height => 1024 }
   }
 
+  Waterpig::BrowserConsoleLogger.configure(config)
 
   config.before(:suite) do
     Capybara.default_driver = Waterpig.pick_capybara_driver(config.waterpig_driver)
     Capybara.javascript_driver = Waterpig.pick_capybara_driver(config.waterpig_js_driver)
+    config.waterpig_clearable_logs.each do |logfile|
+      if File.directory?('log')
+        File::open("log/#{logfile}.log", "w") do |log|
+          log.write ""
+        end
+      end
+    end
   end
 
   if defined?(Timecop)
@@ -87,6 +97,7 @@ RSpec.configure do |config|
   config.include Waterpig::BrowserSize, :type => proc{|value|
     config.waterpig_browser_size_types && config.waterpig_browser_size_types.include?(value)
   }
+
 end
 
 RSpec.configure do |config|
