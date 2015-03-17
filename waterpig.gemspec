@@ -28,6 +28,7 @@ Gem::Specification.new do |spec|
     lib/waterpig/deadbeat-connections.rb
     lib/waterpig/tinymce-tools.rb
     lib/waterpig/browser-integration.rb
+    lib/waterpig/browser-console-logger.rb
     lib/waterpig/poltergeist.rb
     lib/waterpig/warning-suppressor.rb
     lib/waterpig/snap-step.rb
