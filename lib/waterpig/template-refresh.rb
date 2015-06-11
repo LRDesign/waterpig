@@ -1,5 +1,14 @@
 module Waterpig
-  # This code is all essentially cribbed from ActiveRecord here and there
+
+
+  # Tool to handle migrations and rebuilds on a test template database.  For
+  # explanation of what the test templated DB is and how it's used, see the
+  # README.
+  #
+  # This should auto detect any needed migrations in that database. However, it
+  # does not detect changes to db/seeds.rb, so if you have changed seeds
+  # without adding a DB migration, you will need to drop and rebuild the
+  # test_template.
   module TemplateRefresh
     extend self
 
