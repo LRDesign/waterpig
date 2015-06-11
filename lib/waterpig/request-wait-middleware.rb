@@ -1,6 +1,16 @@
 require 'thread'
 
 module Waterpig
+
+  # This Rack middleware is designed to resolve common timing problems with
+  # end-to-end tests. Without it, specs will often finish and :after hooks will
+  # get executed while a request is still "in flight". The result can be, for
+  # example, specs failing because the database has been wiped before a request
+  # truly finishes.
+  #
+  # This middleware counts requests and allows other processes (e.g. testing
+  # processes) to block via RequestWaitMiddle.wait_for_idle() so that they do
+  # not proceed until all requests have completed.
   class RequestWaitMiddleware
     @@idle_mutex = Mutex.new
 
