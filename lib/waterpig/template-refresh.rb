@@ -10,25 +10,29 @@ module Waterpig
   # without adding a DB migration, you will need to drop and rebuild the
   # test_template.
   module TemplateRefresh
+    Base = ActiveRecord::Base
+    Migrator = ActiveRecord::Migrator
+    DatabaseTasks = ActiveRecord::Tasks::DatabaseTasks
+
     extend self
 
     def load_config
-      ActiveRecord::Base.configurations       = ActiveRecord::Tasks::DatabaseTasks.database_configuration || {}
-      ActiveRecord::Migrator.migrations_paths = ActiveRecord::Tasks::DatabaseTasks.migrations_paths
+      Base.configurations       = DatabaseTasks.database_configuration || {}
+      Migrator.migrations_paths = DatabaseTasks.migrations_paths
     end
 
     def purge_env(env)
-      ActiveRecord::Tasks::DatabaseTasks.purge(config_for(env))
+      DatabaseTasks.purge(config_for(env))
     end
 
     def with_temporary_connection(env)
       begin
-        should_reconnect = ActiveRecord::Base.connection_pool.active_connection?
+        should_reconnect = Base.connection_pool.active_connection?
 
         yield
       ensure
         if should_reconnect
-          ActiveRecord::Base.establish_connection(config_for(ActiveRecord::Tasks::DatabaseTasks.env))
+          Base.establish_connection(config_for(DatabaseTasks.env))
         end
       end
     end
@@ -36,26 +40,25 @@ module Waterpig
     #Assumes schema_format == ruby
     def load_schema(env)
       ActiveRecord::Schema.verbose = false
-      ActiveRecord::Tasks::DatabaseTasks.load_schema_for config_for(env), :ruby, ENV['SCHEMA']
+      DatabaseTasks.load_schema_for config_for(env), :ruby, ENV['SCHEMA']
     end
 
     def load_seed
-      ActiveRecord::Tasks::DatabaseTasks.load_seed
+      DatabaseTasks.load_seed
       # load('spec/test_seeds.rb')
     end
 
-    Base = ActiveRecord::Base
 
     def config_for(env)
-      ActiveRecord::Base.configurations.fetch(env.to_s)
+      Base.configurations.fetch(env.to_s)
     end
 
     def connection_for(env)
-      ActiveRecord::Base.establish_connection(env).connection
+      Base.establish_connection(env).connection
     end
 
     def if_needs_migration(env)
-      if ActiveRecord::Migrator.needs_migration?(connection_for(env))
+      if Migrator.needs_migration?(connection_for(env))
         begin
           current_config = Base.connection_config
           Base.clear_all_connections!
@@ -71,9 +74,9 @@ module Waterpig
     end
 
     def ensure_created(env)
-      ActiveRecord::Base.establish_connection(env).connection
+      Base.establish_connection(env).connection
     rescue ActiveRecord::NoDatabaseError
-      ActiveRecord::Tasks::DatabaseTasks.create(config_for(env))
+      DatabaseTasks.create(config_for(env))
     end
 
 
