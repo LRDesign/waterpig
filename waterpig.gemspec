@@ -26,6 +26,8 @@ Gem::Specification.new do |spec|
     lib/waterpig/selenium_chrome.rb
     lib/waterpig/database-cleaner.rb
     lib/waterpig/deadbeat-connections.rb
+    lib/waterpig/template-refresh.rb
+    lib/waterpig/request-wait-middleware.rb
     lib/waterpig/tinymce-tools.rb
     lib/waterpig/browser-integration.rb
     lib/waterpig/browser-console-logger.rb
