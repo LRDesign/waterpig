@@ -8,7 +8,10 @@ module Waterpig
     end
 
     def self.resize_browser_window(size)
-      Capybara.current_session.driver.browser.manage.window.resize_to(size[:width], size[:height])
+      driver = Capybara.current_session.driver
+      window = driver.current_window_handle
+      req_size = [size.fetch(:width), size.fetch(:height)]
+      driver.resize_window_to(window, *req_size)
     end
 
     def self.current_size(example)
