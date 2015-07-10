@@ -1,7 +1,9 @@
 Waterpig
 ========
 
-A collection of helpers for Capybara, collected over several years by Logical Reality Design.
+A collection of helpers for Rails integration testing with Capybara, RSpec,
+RSpec-Steps, and DatabaseCleaner collected over several years by Logical
+Reality Design.
 
 Selecting A Browser Driver
 --------------------------
@@ -67,6 +69,161 @@ RSpec.configure do |config|
 end
 ```
 
+# Database Cleaning
+
+Because database cleaning is sich a tricky problem, Waterpig tries to handle it
+in the best way possible. There are several configuration knobs to adjust if
+needed.
+
+## Transactions
+
+Most test types, Waterpig leans on rspec-rails's transactional fixtures, so
+there's a BEGIN at the beginning of a test and ROLLBACK at the end. This is
+almost always what you want - it's fast and correct.
+
+## Resets
+
+For feature specs (i.e. when you're pointing Capybara at a test server) and
+other kinds of tests, transactional fixtures doesn't do the job: the test
+server and the test itself run in different threads, so they have different
+connections to the database and therefore don't see "inside" each other's
+transactions. If you try to change the database using browser actions and then
+check the database in the tests, you're going to have a (mysteriously) bad
+time.
+
+To cope with this case, as well as situations where you really do want to test
+whole-database changes, Waterpig provides tools to "reset" the database to a
+pristine state.
+
+
+The first thing to know is how to turn on resets for a set of tests. The
+easiest is to hook into RSpec's existing metadata. Most spec groups are marked
+with a :type field (it used to be automatic, but there remain features of
+rspec-rails that depend on the type of the tests)
+
+Simply add this to your RSpec.configuration block (in e.g. `spec_helper.rb`)
+```
+config.waterpig_reset_types = [:feature]
+```
+That's actually the default, so in most projects you won't even have to change
+anything.
+
+Waterpig actually uses one of two methods to do DB resets, "truncation" or
+"refresh." They each have their tradeoffs, so it's worth discussing them.
+
+### Truncation
+
+The simplest cleaning strategy is this: truncate all the tables in the database
+between tests. It's okay for speed, but the real hangup is when you've got a
+complex seeds.rb - if, for instance, you need to ingest a ZIP code database.
+Apart from being slow, truncation is really reliable
+
+### Refresh
+
+If you're using PostgreSQL, Waterpig has an alternative method for doing resets
+that can bemuch faster called "refresh." You need to configure a new
+ActiveRecord database configuration, exactly like your existing `:test` config,
+called `:test_template.` It needs its own database name. Then add the name of
+the `:test_template` database to your `:test` config under a key called
+`template.` In the end, the things you've added to `database.yml` should look
+something like:
+
+```yaml
+test:
+  adapter: postgresql
+  database: my_app_test
+  template: my_app_test_template
+
+test_template:
+  adapter: postgresql
+  database: my_app_test_template
+```
+
+Then, in `spec_helper.rb` add:
+```ruby
+RSpec.configure do |config|
+  config.waterpig_reset_method = :refresh
+end
+```
+
+Here's how reset works: Waterpig will make sure that the `test_template`
+database exists, and if it needs to be migrated then it will be migrated and
+seeded. Then, before tests that need to be `reset` it'll drop the test database
+and recreate it, using test_template as the PostgreSQL template database - the
+schema and data from a migrated and seeded database. This happens very quickly.
+
+One big warning here: Waterpig will create `test_template` if it's missing or
+recreate it if its migrations are behind, but not if it isn't up to date on
+`db/seeds.rb`. If you change seeds, you'll need to
+```
+> RAILS_ENV=test_template bundle exec rake db:drop
+```
+or your specs will fail mysteriously. It's this
+shortcoming that prevents us making `:refresh` the default reset method.
+
+Or, you can add a this to `lib/tasks/databases.rb` (possibly a new file) in
+your Rails project:
+
+```ruby
+namespace :db do
+  task :seed do
+    ActiveRecord::DatabaseTasks.drop_current(:test_template)
+    ActiveRecord::DatabaseTasks.create_current(:test_template)
+  end
+end
+```
+
+If you need to change the database config names, you can:
+```ruby
+RSpec.configure do |config|
+  config.waterpig_test_database_config = :just_checking
+  config.waterpig_test_template_database_config = :just_checking_like_this
+end
+```
+
+## Do What I Say
+
+If you need to set up tests so that they don't get cleaned, you can put their
+type into `config.waterpig_skip_cleaning_types` which is an Array.
+
+If you want to force a single example or group of examples not to be cleaned,
+you can do like:
+
+```ruby
+RSpec.describe "these tests should not be cleaned", :manual_database_cleaning do
+  #...
+end
+```
+
+If you want to force a particular cleaning method:
+```ruby
+RSpec.describe "these tests have weird requirements", :clean_with => :reset do
+  #...
+end
+```
+
+The metadata keys above are configurable at
+`config.waterpig_exclude_cleaning_key` and
+`config.waterpig_explicit_cleaning_method_key`
+
+
+## Config Reference
+
+Config Name                                   | Purpose                                                                             | Values                                                 | Default Value
+---:                                          | :----                                                                               | :----
+config.waterpig_exclude_cleaning_key          | The name of the metadata key to mark test that should not be cleaned                | Boolean                                                | :manual_database_cleaning
+config.waterpig_explicit_cleaning_method_key  | The name of the metadata key to force a particular cleaning method                  | :reset, :refresh, :truncate, :transaction, :dont_clean | :clean_with
+config.waterpig_database_reset_method         | How "reset" cleaning is performed                                                   | :refresh, :truncate                                    | :truncation
+config.waterpig_reset_types                   | RSpec test types that should be reset (truncated or refreshed)                      | Array | [:feature]
+config.waterpig_skip_cleaning_types           | RSpec test types that shouldn't be cleaned                                          | Array                                                  | []
+config.waterpig_exclude_seeds_types           | RSpec test types where db seeds shouldn't be loaded after truncating                | Array                                                  | []
+config.waterpig_truncation_types              | RSpec test types that should be truncated (deprecated, prefer waterpig_reset_types) | Array | [:feature]
+config.waterpig_database_truncation_config    | DatabaseCleaner configuration for truncating                                        | Hash                                                   | {:except => %w[spatial_ref_sys]}
+config.waterpig_db_seeds                      | Path to the db_seeds file to use when truncating                                    | String | 'db/seeds.rb'
+config.waterpig_test_database_config          | The name of the test database config for refreshing                                 | Symbol                                                 | :test
+config.waterpig_test_template_database_config | The name of the template test database config for refreshing                        | Symbol                                                 | :test_template
+
+
 # Experimental Features
 
 These are features of Waterpig that are being used in real projects, but for
@@ -100,94 +257,6 @@ RSpec.configure do |config|
   config.before(:all, :type => :feature) do
     Waterpig::RequestWaitMiddleware.wait_for_idle do
       DatabaseCleaner.clean(:truncation)
-    end
-  end
-end
-```
-
-
-## Rebuilding the Test Database from a Template
-
-If you are using DatabaseCleaner or other truncation method, cleaning your database between tests can be slow,
-particularly if your database has a lot of setup in seeds.rb.  Waterpig's solution is to use a second, test
-template database, that contains a cleaned and seeded database, and to leverage PostgreSQL's database
-template feature to re-initialize the test database from that template.
-
-In your database.yml, configure the test database with a template: setting, and  an additional template DB.
-
-```yaml
-test:
-  adapter: postgresql
-  database: my_app_test
-  template: my_app_test_template
-
-test_template:
-  adapter: postgresql
-  database: my_app_test_template
-```
-
-That's it! Waterpig will create the template database if it doesn't exist.
-
-NOTE:  the test template maintainer code can detect new migrations, but cannot detect changes to db/seeds.rb. If
-you have changed your seeds file without adding a new migration, your test template will not have the new seeds
-until you drop and rebuild it.  You can do that with:
-
-```
-> RAILS_ENV=test_template bundle exec rake db:drop
-```
-
-Or, you can add a this to `lib/tasks/databases.rb` (possibly a new file) in
-your Rails project:
-
-```ruby
-namespace :db do
-  task :seed do
-    ActiveRecord::DatabaseTasks.drop_current(:test_template)
-    ActiveRecord::DatabaseTasks.create_current(:test_template)
-  end
-end
-```
-
-which will automate the process whenever you db:seed development.
-
-
-## How to Use
-
-The intention is to have Waterpig set this all up when requested. There are
-some challenges around when to do which thing however, and we wanted to roll
-this out.
-
-For the moment, you can do this:
-
-```ruby
-require 'waterpig/template-refresh'
-require 'waterpig/request-wait-middleware'
-
-RSpec.configure do |config|
-  config.waterpig_skip_cleaning_types = [:feature]
-
-  config.prepend_before(:suite) do
-    Waterpig::TemplateRefresh.load_if_pending!(:test_template)
-    Waterpig::TemplateRefresh.commandeer_database(:test)
-  end
-
-  rebuild_types = ["feature"]
-
-  last_type = nil
-
-  config.after(:all) do
-    last_type = self.class.metadata[:type].to_s
-  end
-
-  config.before(:all, :type => proc{|type| rebuild_types.include?(type.to_s)}) do
-    Waterpig::RequestWaitMiddleware.wait_for_idle do
-      Waterpig::TemplateRefresh.refresh_database(:test)
-    end
-  end
-
-  config.before(:all, :type => proc{|type| !rebuild_types.include?(type.to_s)}) do
-    if rebuild_types.include?(last_type)
-      Waterpig::TemplateRefresh.refresh_database(:test)
     end
   end
 end
