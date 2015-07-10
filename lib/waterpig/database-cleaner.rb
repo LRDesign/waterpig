@@ -85,7 +85,7 @@ RSpec.configure do |config|
   #Before the first group following a refresh-group, refresh again.
   #Faster than refreshing before and after all the feature groups
   config.before(:all, :description => proc{|value, metadata| !use_refresh?(config, metadata) }) do
-    if rebuild_types.include?(last_type)
+    if config.waterpig_reset_types.include?(last_type)
       Waterpig::TemplateRefresh.refresh_database(config.waterpig_test_database_config)
     end
   end
@@ -125,7 +125,7 @@ RSpec.configure do |config|
         load config.waterpig_db_seeds
       end
     elsif config.waterpig_database_reset_method == :refresh
-      Waterpig::TemplateRefresh.load_if_pending!(:config.waterpig_test_template_database_config)
+      Waterpig::TemplateRefresh.load_if_pending!(config.waterpig_test_template_database_config)
       Waterpig::TemplateRefresh.commandeer_database(config.waterpig_test_database_config)
       Waterpig::TemplateRefresh.refresh_database(config.waterpig_test_database_config)
     else
