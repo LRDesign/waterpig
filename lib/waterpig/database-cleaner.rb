@@ -41,9 +41,9 @@ RSpec.configure do |config|
     return :no_clean if metadata[config.waterpig_exclude_cleaning_key]
     unless (explicit_method = metadata[config.waterpig_explicit_cleaning_method_key]).nil?
       if explicit_method == :reset
-        config.waterpig_database_reset_method
+        return config.waterpig_database_reset_method
       else
-        explicit_method
+        return explicit_method
       end
     end
 
