@@ -1,5 +1,5 @@
 begin
-  require 'activerecord'
+  require 'active_record'
   module Waterpig
 
 
