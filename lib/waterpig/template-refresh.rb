@@ -123,4 +123,5 @@ begin
     end
   end
 rescue LoadError
+  warn "ActiveRecord not present"
 end

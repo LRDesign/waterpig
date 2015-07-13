@@ -75,17 +75,16 @@ RSpec.configure do |config|
   config.after(:all) do
     last_type = self.class.metadata[:type].to_s
   end
-
-  config.before(:all, :description => proc{|value, metadata| use_refresh?(config, metadata)}) do
-    Waterpig::RequestWaitMiddleware.wait_for_idle do
+  #Before the first group following a refresh-group, refresh again.
+  #Faster than refreshing before and after all the feature groups
+  config.before(:all, :description => proc{|value, metadata| use_refresh?(config, metadata) }) do
+    unless config.waterpig_reset_types.map(&:to_s).include?(last_type)
       Waterpig::TemplateRefresh.refresh_database(config.waterpig_test_database_config)
     end
   end
 
-  #Before the first group following a refresh-group, refresh again.
-  #Faster than refreshing before and after all the feature groups
-  config.before(:all, :description => proc{|value, metadata| !use_refresh?(config, metadata) }) do
-    if config.waterpig_reset_types.include?(last_type)
+  config.after(:all, :description => proc{|value, metadata| use_refresh?(config, metadata)}) do
+    Waterpig::RequestWaitMiddleware.wait_for_idle do
       Waterpig::TemplateRefresh.refresh_database(config.waterpig_test_database_config)
     end
   end
