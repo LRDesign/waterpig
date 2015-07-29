@@ -229,6 +229,15 @@ config.waterpig_test_template_database_config | The name of the template test da
 These are features of Waterpig that are being used in real projects, but for
 which the interfaces in Waterpig haven't been designed yet.
 
+## Mobile browser emulation
+
+Currently in bleeding edge beta are registered drivers for Capybara: mobile_chrome_ios and mobile_chrome_android. Try them against your codebase with
+
+```
+CAPYBARA_DRIVER=mobile_chrome_android CAPYBARA_JS_DRIVER=mobile_chrome_android rspec spec
+```
+
+
 ## Blocking Spec Cleanup For Browser Requests
 
 Much suffering is caused when rspec and Capybara clean up after a spec while a request is still being
