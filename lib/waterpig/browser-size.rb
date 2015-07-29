@@ -7,10 +7,28 @@ module Waterpig
       end
     end
 
+    #empirically determined - there's an issue on Chrome somewhere, but I can't
+    #find it at the moment. The upshot is: if you resize Chrome on Linux below
+    #this width, the content area collapses to 0 height. Tests pass anyway, is
+    #the worst part.
+    MIN_WIDTH = 348
+
+    @@warned_about_size = false
+
     def self.resize_browser_window(size)
       driver = Capybara.current_session.driver
       window = driver.current_window_handle
-      req_size = [size.fetch(:width), size.fetch(:height)]
+      width = size.fetch(:width)
+      if width < MIN_WIDTH
+        unless @@warned_about_size
+          warn "Requested browser size #{size.inspect} - but minimum width is #{MIN_WIDTH}. Adjusting."
+          warn "You might consider setting up mobile browser emulation. (details forthcoming)"
+          @@warned_about_size = true
+        end
+        width = MIN_WIDTH
+      end
+
+      req_size = [width, size.fetch(:height)]
       driver.resize_window_to(window, *req_size)
     end
 
