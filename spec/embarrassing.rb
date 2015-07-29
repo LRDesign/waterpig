@@ -3,6 +3,7 @@ Sequel.sqlite
 
 require 'waterpig'
 require 'waterpig/deadbeat-connections'
+require 'waterpig/at_exit_duck_punch'
 module ActiveRecord
   class Base
   end
