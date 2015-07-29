@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name		= "waterpig"
-  spec.version		= "0.8.1"
+  spec.version		= "0.9.3"
   author_list = {
     "Judson Lester" => 'nyarly@gmail.com',
     "Evan Dorn"     => 'evan@lrdesign.com'
@@ -36,6 +36,8 @@ Gem::Specification.new do |spec|
     lib/waterpig/snap-step.rb
     lib/waterpig/browser-tools.rb
     lib/waterpig/browser-size.rb
+
+    lib/waterpig/at_exit_duck_punch.rb
 
     spec/embarrassing.rb
     spec_help/spec_helper.rb
