@@ -22,7 +22,8 @@ module Waterpig
       if width < MIN_WIDTH
         unless @@warned_about_size
           warn "Requested browser size #{size.inspect} - but minimum width is #{MIN_WIDTH}. Adjusting."
-          warn "You might consider setting up mobile browser emulation. (details forthcoming)"
+          warn "You might consider setting up mobile browser emulation. Try running with"
+          warn "CAPYBARA_DRIVER=mobile_chrome_android CAPYBARA_JS_DRIVER=mobile_chrome_android"
           @@warned_about_size = true
         end
         width = MIN_WIDTH
