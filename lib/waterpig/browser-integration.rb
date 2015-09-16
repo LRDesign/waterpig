@@ -23,25 +23,25 @@ module Waterpig
 
   module ExampleLogger
     def self.included(group)
+      group.before :all do
+        Rails.logger.fatal do
+          "Beginning #{group.description} (at #{group.location})"
+        end
+      end
+
+      group.after :all do
+        Rails.logger.fatal do
+          "Finished #{group.description} (at #{group.location})"
+        end
+      end
+
       group.before :each do |example|
-        Rails.logger.fatal do
-          "Beginning #{example.full_description} (at #{example.location})"
-        end
-      end
-
-      group.after :each do |example|
-        Rails.logger.fatal do
-          "Finished #{example.full_description} (at #{example.location})"
-        end
-      end
-
-      group.before :step do |example|
         Rails.logger.fatal do
           "Beginning step #{example.full_description} (at #{example.location})"
         end
       end
 
-      group.after :step do |example|
+      group.after :each do |example|
         Rails.logger.fatal do
           "Finished step #{example.full_description} (at #{example.location})"
         end

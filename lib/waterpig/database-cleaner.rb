@@ -4,7 +4,6 @@ require 'waterpig/template-refresh'
 require 'waterpig/request-wait-middleware'
 
 RSpec.configure do |config|
-  #config.use_transactional_fixtures = false
   DatabaseCleaner.strategy = :transaction
 
   config.add_setting :waterpig_exclude_cleaning_key, :default => :manual_database_cleaning
@@ -70,6 +69,10 @@ RSpec.configure do |config|
     cleaning_policy(config, metadata) == :transaction
   end
 
+  def use_cleaning?(config, metadata)
+    cleaning_policy(config, metadata) != :no_clean
+  end
+
   last_type = nil
 
   config.after(:all) do
@@ -90,6 +93,7 @@ RSpec.configure do |config|
   end
 
   config.before :all, :description => proc{ |value, metadata| use_truncate?(config, metadata) } do
+    Rails.logger.fatal "\n#{__FILE__}:#{__LINE__} => truncate before"
     with_showing(true, false) do
       DatabaseCleaner.clean_with :truncation, config.waterpig_database_truncation_config
       unless config.waterpig_exclude_seeds_types.include?(self.class.metadata[:type])
@@ -101,6 +105,7 @@ RSpec.configure do |config|
   end
 
   config.after :all, :description => proc{ |value, metadata| use_truncate?(config, metadata) } do
+    Rails.logger.fatal "\n#{__FILE__}:#{__LINE__} => truncate after"
     with_showing(true, true) do
       DatabaseCleaner.clean_with :truncation, config.waterpig_database_truncation_config
       if config.waterpig_db_seeds?
@@ -110,10 +115,12 @@ RSpec.configure do |config|
   end
 
   config.before :each, :description => proc{ |value, metadata| use_transaction?(config, metadata) } do
+    Rails.logger.fatal "\n#{__FILE__}:#{__LINE__} => transaction before"
     DatabaseCleaner.start
   end
 
   config.after :each, :description => proc{ |value, metadata| use_transaction?(config, metadata) } do
+    Rails.logger.fatal "\n#{__FILE__}:#{__LINE__} => transaction after"
     DatabaseCleaner.clean
   end
 

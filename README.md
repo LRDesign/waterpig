@@ -75,6 +75,15 @@ Because database cleaning is sich a tricky problem, Waterpig tries to handle it
 in the best way possible. There are several configuration knobs to adjust if
 needed.
 
+However, _nota bene:_ you must set
+```ruby
+RSpec.configure do |config|
+  config.use_transaction_fixtures = false
+end
+```
+or you'll have a bad time.
+
+
 ## Transactions
 
 Most test types, Waterpig leans on rspec-rails's transactional fixtures, so
