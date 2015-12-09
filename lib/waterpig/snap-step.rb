@@ -1,7 +1,7 @@
 module Waterpig
   module SnapStep
     def self.included(steps)
-      steps.after(:step) do |example|
+      steps.after(:each) do |example|
         save_snapshot(example.metadata[:snapshots_into], example.description.downcase.gsub(/\s+/, "-"))
       end
     end
