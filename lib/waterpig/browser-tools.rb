@@ -56,7 +56,7 @@ module Waterpig
     def save_snapshot(dir, name)
       require 'fileutils'
 
-      dir = File.join(config.waterpig_snapshot_dir, dir)
+      dir = File.join(RSpec.configuration.waterpig_snapshot_dir, dir)
       base_path = "#{dir}/#{"%03i" % frame_index(dir)}-#{name}"
 
       img_path = base_path + ".png"
