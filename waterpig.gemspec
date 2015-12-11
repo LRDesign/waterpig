@@ -56,7 +56,7 @@ Gem::Specification.new do |spec|
   spec.rdoc_options	+= ["--title", "#{spec.name}-#{spec.version} Documentation"]
 
   spec.add_dependency("capybara", "~> 2.2")
-  spec.add_dependency("database_cleaner", "~> 1.3.0")
+  spec.add_dependency("database_cleaner", "~> 1.3")
   spec.add_dependency("rspec-steps", "~> 2.1")
-  spec.add_dependency("text-table", "~> 1.2.3")
+  spec.add_dependency("text-table", "~> 1.2", ">= 1.2.3")
 end
