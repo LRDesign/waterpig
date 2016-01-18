@@ -17,10 +17,14 @@ module Waterpig
 
     def emit_log(entry)
       file.write( entry['time'] + "\n")
-      if entry['type'] == 'table'
+      case entry['type']
+      when 'table'
         emit_table(entry['value'])
-      else
+      when 'message'
         file.write(entry['value'].to_s + "\n\n")
+      when 'groupStart', 'groupEnd'
+      else
+        file.write(entry.inspect + "\n")
       end
     end
 
@@ -76,10 +80,22 @@ module Waterpig
     #  |  bar  | 5 |   | 3 |
     #  +-------+---+---+---+
     def emit_complex_table(hash, table)
-      keys = hash.reduce([]){ |memo, arr| memo + arr[1].keys }.uniq
+      keys = hash.values.reduce({}) do |memo, row|
+        case row
+        when Hash
+          memo.merge(row)
+        else
+          memo.merge(value: true)
+        end
+      end.keys
       table.head = [ "index" ] + keys
       hash.each do |name, row|
-        table.rows << [ name ] + keys.map{ |key| row.fetch(key, nil)}
+        case row
+        when Hash
+          table.rows << [ name ] + keys.map{ |key| row.fetch(key, nil)}
+        else
+          table.rows << [ name ] + keys.map{ |key| key == :value ? row : nil }
+        end
       end
     end
 
@@ -89,7 +105,7 @@ module Waterpig
 
       if console_entries
         console_entries.each do |entry|
-          logger.emit_log(entry)
+          emit_log(entry)
         end
       end
     end
